@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CrowdBridge Invoice Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0A1628;
+    --navy-card: #0F1F3A;
+    --navy-line: #1A3050;
+    --gold: #D4AF37;
+    --gold-bright: #F2C94C;
+    --off-white: #F5F3EE;
+    --slate: #8B95A8;
+    --green: #2A6B2A;
+    --green-bg: #0D2210;
+    --green-text: #7EBD4E;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0d0d0d;
+    color: var(--off-white);
+    min-height: 100vh;
+    padding: 32px 16px 80px;
+  }
+
+  h1.app-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .app-sub {
+    font-size: 0.85rem;
+    color: var(--slate);
+    margin-bottom: 32px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--navy);
+    border: 1px solid var(--navy-line);
+    border-radius: 12px;
+    padding: 26px;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--navy-line);
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--slate);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    background: var(--navy-card);
+    border: 1px solid var(--navy-line);
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: var(--off-white);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+  }
+
+  .form-group select option { background: var(--navy-card); }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    table-layout: fixed;
+  }
+
+  .items-table th {
+    text-align: left;
+    padding: 6px 8px;
+    color: var(--slate);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--navy-line);
+  }
+
+  .items-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--navy-line);
+    vertical-align: middle;
+  }
+
+  .items-table input {
+    background: var(--navy-card);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 5px 8px;
+    color: var(--off-white);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    width: 100%;
+    outline: none;
+  }
+
+  .items-table input:focus { border-color: var(--gold); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy);
+  }
+
+  .btn-gold:hover { background: var(--gold-bright); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--off-white);
+    border: 1px solid var(--navy-line);
+  }
+
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-danger {
+    background: transparent;
+    color: #e24b4a;
+    border: none;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .total-box {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    padding: 4px 0;
+    color: var(--slate);
+  }
+
+  .total-row.grand {
+    border-top: 1px solid var(--navy-line);
+    margin-top: 8px;
+    padding-top: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .spacer { height: 20px; }
+
+  /* ── PREVIEW / PRINT ── */
+  #preview {
+    display: none;
+    max-width: 1200px;
+    margin: 40px auto 0;
+  }
+
+  #preview.visible { display: block; }
+
+  .invoice-sheet {
+    background: var(--navy);
+    border-radius: 0;
+    border: none;
+    padding: 48px 44px;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--navy-line);
+  }
+
+  .inv-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    overflow-wrap: break-word;
+  }
+
+  .inv-brand-sub {
+    font-size: 0.8rem;
+    color: var(--slate);
+    margin-top: 2px;
+  }
+
+  .inv-meta {
+    text-align: right;
+    font-size: 0.85rem;
+    min-width: 160px;
+  }
+
+  .inv-meta .inv-id {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--off-white);
+    letter-spacing: 0.05em;
+  }
+
+  .inv-meta .inv-date { color: var(--slate); margin-top: 4px; }
+
+  .inv-parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 32px;
+    margin-bottom: 32px;
+  }
+
+  .inv-parties > div {
+    min-width: 0;
+  }
+
+  .inv-party-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .inv-party-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--off-white);
+    margin-bottom: 4px;
+    overflow-wrap: break-word;
+  }
+
+  .inv-party-detail {
+    font-size: 0.82rem;
+    color: var(--slate);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  .inv-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+    font-size: 0.88rem;
+    table-layout: fixed;
+  }
+
+  .inv-items th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--navy-card);
+    color: var(--slate);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .inv-items th:nth-child(1) { width: 46%; }
+  .inv-items th:nth-child(2) { width: 14%; }
+  .inv-items th:nth-child(3) { width: 20%; }
+  .inv-items th:nth-child(4) { width: 20%; }
+
+  .inv-items th:last-child, .inv-items td:last-child { text-align: right; }
+
+  .inv-items td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--navy-line);
+    color: var(--off-white);
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .inv-totals {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .inv-totals-inner {
+    min-width: 260px;
+    max-width: 100%;
+  }
+
+  .inv-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.88rem;
+    padding: 5px 0;
+    color: var(--slate);
+  }
+
+  .inv-total-row.grand {
+    border-top: 1px solid var(--navy-line);
+    margin-top: 8px;
+    padding-top: 10px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .inv-payment {
+    margin-top: 32px;
+    padding: 20px;
+    background: var(--navy-card);
+    border-radius: 8px;
+    border: 1px solid var(--navy-line);
+  }
+
+  .inv-payment-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .inv-payment-row {
+    display: flex;
+    gap: 20px 32px;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+
+  .inv-payment-item {
+    min-width: 140px;
+    flex: 1 1 140px;
+  }
+
+  .inv-payment-item label {
+    display: block;
+    color: var(--slate);
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+  }
+
+  .inv-payment-item span {
+    color: var(--off-white);
+    font-weight: 500;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .inv-terms {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--green-bg);
+    border: 1px solid var(--green);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--green-text);
+  }
+
+  .inv-footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--navy-line);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--slate);
+  }
+
+  .inv-footer span {
+    overflow-wrap: break-word;
+    min-width: 0;
+  }
+
+  #preview-btn-row {
+    display: flex;
+    gap: 12px;
+    max-width: 860px;
+    margin: 16px auto 0;
+    justify-content: flex-end;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: var(--navy-card);
+    color: var(--gold);
+    border: 1px solid var(--navy-line);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<div style="max-width:1200px;margin:0 auto;">
+  <h1 class="app-title">Invoice Generator</h1>
+  <p class="app-sub">CrowdBridge · Fill in the details, preview, then print to PDF.</p>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: CLIENT + EVENT -->
+  <div>
+    <div class="panel">
+      <p class="section-title">Client details <span class="badge">Bill To</span></p>
+
+      <div class="form-group">
+        <label>Client / organisation name</label>
+        <input type="text" id="clientName" placeholder="e.g. XYZ Entertainment Ltd" />
+      </div>
+      <div class="form-group">
+        <label>Client email (optional)</label>
+        <input type="email" id="clientEmail" placeholder="client@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Client phone (optional)</label>
+        <input type="text" id="clientPhone" placeholder="+234..." />
+      </div>
+      <div class="form-group">
+        <label>Event name</label>
+        <input type="text" id="eventName" placeholder="e.g. Annual Product Launch 2026" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Invoice date</label>
+          <input type="date" id="invDate" />
+        </div>
+        <div class="form-group">
+          <label>Due date</label>
+          <input type="date" id="dueDate" />
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="panel">
+      <p class="section-title">Your details <span class="badge">Saved</span></p>
+
+      <div class="form-group">
+        <label>Your name</label>
+        <input type="text" id="yourName" value="Motunrayo Arogbodo Olayimade" />
+      </div>
+      <div class="form-group">
+        <label>Business name</label>
+        <input type="text" id="bizName" value="CrowdBridge" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" id="yourPhone" value="+234 902 664 9124" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="text" id="yourEmail" value="crowdbridge001@gmail.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" id="yourAddress" value="Lagos, Nigeria" />
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="panel">
+      <p class="section-title">Bank details <span class="badge">Saved</span></p>
+
+      <div class="form-group">
+        <label>Bank name</label>
+        <input type="text" id="bankName" value="GTBank" />
+      </div>
+      <div class="form-group">
+        <label>Account name</label>
+        <input type="text" id="accName" value="Motunrayo Arogbodo Olayimade" />
+      </div>
+      <div class="form-group">
+        <label>Account number</label>
+        <input type="text" id="accNumber" value="0682606944" />
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: LINE ITEMS -->
+  <div>
+    <div class="panel">
+      <p class="section-title">Quick add — transport</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bus type</label>
+          <select id="busType">
+            <option value="">— select —</option>
+            <option value="BRT|Mainland|250000|70000">BRT — Mainland</option>
+            <option value="BRT|Island|320000|70000">BRT — Island</option>
+            <option value="Coaster|Mainland|80000|40000">Coaster — Mainland</option>
+            <option value="Coaster|Island|120000|40000">Coaster — Island</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Number of buses</label>
+          <input type="number" id="busQty" min="1" value="1" />
+        </div>
+      </div>
+      <button class="btn btn-outline" onclick="addBus()">+ Add bus to invoice</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="panel">
+      <p class="section-title">Line items</p>
+
+      <table class="items-table" id="itemsTable">
+        <thead>
+          <tr>
+            <th style="width:42%">Description</th>
+            <th style="width:14%">Qty</th>
+            <th style="width:22%">Unit price (N)</th>
+            <th style="width:16%">Total</th>
+            <th style="width:6%"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="addItem()">+ Add custom line</button>
+      </div>
+
+      <div class="total-box" id="totalsBox">
+        <div class="total-row"><span>Subtotal</span><span id="subtotal">N0</span></div>
+        <div class="total-row grand"><span>Total due</span><span id="grandTotal">N0</span></div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;" onclick="showPreview()">
+        Preview invoice
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div id="preview">
+  <div class="invoice-sheet" id="invoiceSheet"></div>
+  <div id="preview-btn-row">
+    <button class="btn btn-outline" onclick="closePreview()">← Edit</button>
+    <button class="btn btn-gold" onclick="printInvoice()">Download / Print PDF</button>
+  </div>
+</div>
+
+<!-- HIDDEN PDF TARGET — fixed 680px portrait, never visible on screen -->
+<div id="pdfTarget" style="position:fixed;left:-9999px;top:0;width:680px;visibility:hidden;background:#0A1628;">
+  <div style="height:6px;background:#D4AF37;width:100%;"></div>
+  <div id="pdfInvoiceInner" class="invoice-sheet"></div>
+  <div style="height:6px;background:#D4AF37;width:100%;margin-top:16px;"></div>
+</div>
+
+<script>
+let items = [];
+
+function fmt(n) {
+  return 'N' + Number(n).toLocaleString('en-NG');
+}
+
+function genId() {
+  const now = new Date();
+  return 'INV-' + now.getFullYear()
+    + String(now.getMonth()+1).padStart(2,'0')
+    + String(now.getDate()).padStart(2,'0')
+    + '-' + now.getHours()
+    + String(now.getMinutes()).padStart(2,'0')
+    + String(now.getSeconds()).padStart(2,'0')
+    + String(now.getMilliseconds()).padStart(3,'0');
+}
+
+function renderItems() {
+  const tbody = document.getElementById('itemsBody');
+  tbody.innerHTML = '';
+  items.forEach((item, i) => {
+    const total = item.qty * item.price;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${item.desc}" onchange="items[${i}].desc=this.value" /></td>
+      <td><input type="number" min="1" value="${item.qty}" style="width:54px"
+          onchange="items[${i}].qty=+this.value;renderItems()" /></td>
+      <td><input type="number" min="0" value="${item.price}"
+          onchange="items[${i}].price=+this.value;renderItems()" /></td>
+      <td style="color:var(--off-white);font-weight:600">${fmt(total)}</td>
+      <td><button class="btn btn-danger" onclick="removeItem(${i})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateTotals();
+}
+
+function updateTotals() {
+  const sub = items.reduce((s, it) => s + it.qty * it.price, 0);
+  document.getElementById('subtotal').textContent = fmt(sub);
+  document.getElementById('grandTotal').textContent = fmt(sub);
+}
+
+function addItem(desc='', qty=1, price=0) {
+  items.push({ desc, qty, price });
+  renderItems();
+}
+
+function removeItem(i) {
+  items.splice(i, 1);
+  renderItems();
+}
+
+function addBus() {
+  const val = document.getElementById('busType').value;
+  const qty = parseInt(document.getElementById('busQty').value) || 1;
+  if (!val) { alert('Please select a bus type.'); return; }
+  const [type, area, transport, pr] = val.split('|');
+  addItem(`${type} Bus — ${area} (transport, to & fro)`, qty, +transport);
+  addItem(`PR & Mobilizer fee — ${type} Bus`, qty, +pr);
+}
+
+function addItemBlank() { addItem('', 1, 0); }
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function dueDateStr() {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  return d.toISOString().split('T')[0];
+}
+
+function fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function g(id) { return document.getElementById(id).value.trim(); }
+
+function savePrefs() {
+  const prefs = {
+    yourName: g('yourName'), bizName: g('bizName'),
+    yourPhone: g('yourPhone'), yourEmail: g('yourEmail'),
+    yourAddress: g('yourAddress'), bankName: g('bankName'),
+    accName: g('accName'), accNumber: g('accNumber'),
+  };
+  localStorage.setItem('cb_prefs', JSON.stringify(prefs));
+}
+
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem('cb_prefs'));
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+      const el = document.getElementById(k);
+      if (el && p[k]) el.value = p[k];
+    });
+  } catch(e) {}
+}
+
+function showPreview() {
+  const sub = items.reduce((s, it) => s + it.qty * it.price, 0);
+  const id = genId();
+
+  const rows = items.map(it => `
+    <tr>
+      <td>${it.desc}</td>
+      <td style="text-align:center">${it.qty}</td>
+      <td style="text-align:right">${fmt(it.price)}</td>
+      <td style="text-align:right;font-weight:600;color:var(--off-white)">${fmt(it.qty*it.price)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('invoiceSheet').innerHTML = `
+    <div class="inv-header">
+      <div>
+        <div class="inv-brand">${g('bizName') || 'CrowdBridge'}</div>
+        <div class="inv-brand-sub">Audience Mobilization Services</div>
+      </div>
+      <div class="inv-meta">
+        <div class="inv-id">${id}</div>
+        <div class="inv-date">Date: ${fmtDate(g('invDate') || todayStr())}</div>
+        <div class="inv-date">Due: ${fmtDate(g('dueDate') || dueDateStr())}</div>
+      </div>
+    </div>
+
+    <div class="inv-parties">
+      <div>
+        <p class="inv-party-label">From</p>
+        <p class="inv-party-name">${g('yourName') || 'Motunrayo Arogbodo Olayimade'}</p>
+        <p class="inv-party-detail">
+          ${g('yourPhone')}<br>
+          ${g('yourEmail')}<br>
+          ${g('yourAddress')}
+        </p>
+      </div>
+      <div>
+        <p class="inv-party-label">Bill To</p>
+        <p class="inv-party-name">${g('clientName') || '—'}</p>
+        <p class="inv-party-detail">
+          ${g('eventName') ? 'Event: ' + g('eventName') + '<br>' : ''}
+          ${g('clientEmail') ? g('clientEmail') + '<br>' : ''}
+          ${g('clientPhone') || ''}
+        </p>
+      </div>
+    </div>
+
+    <table class="inv-items">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th style="text-align:center">Qty</th>
+          <th style="text-align:right">Unit price</th>
+          <th style="text-align:right">Total</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <div class="inv-totals">
+      <div class="inv-totals-inner">
+        <div class="inv-total-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
+        <div class="inv-total-row grand"><span>Total due</span><span>${fmt(sub)}</span></div>
+      </div>
+    </div>
+
+    <div class="inv-payment">
+      <p class="inv-payment-title">Payment details</p>
+      <div class="inv-payment-row">
+        <div class="inv-payment-item">
+          <label>Bank</label>
+          <span>${g('bankName')}</span>
+        </div>
+        <div class="inv-payment-item">
+          <label>Account name</label>
+          <span>${g('accName')}</span>
+        </div>
+        <div class="inv-payment-item">
+          <label>Account number</label>
+          <span>${g('accNumber')}</span>
+        </div>
+      </div>
+      <div class="inv-terms">
+        50% upfront before mobilization. Balance due before or on event day.
+      </div>
+    </div>
+
+    <div class="inv-footer">
+      <span>${g('bizName') || 'CrowdBridge'} · ${g('yourAddress')}</span>
+      <span>${g('yourEmail')} · ${g('yourPhone')}</span>
+    </div>
+  `;
+
+  document.getElementById('preview').classList.add('visible');
+  document.getElementById('preview').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closePreview() {
+  document.getElementById('preview').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function printInvoice() {
+  savePrefs();
+  const btn = event.target;
+  btn.textContent = 'Generating PDF...';
+  btn.disabled = true;
+
+  const target = document.getElementById('pdfTarget');
+  const inner = document.getElementById('pdfInvoiceInner');
+  inner.innerHTML = document.getElementById('invoiceSheet').innerHTML;
+  target.style.visibility = 'visible';
+
+  html2canvas(target, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#0A1628',
+    logging: false,
+    width: 680,
+    windowWidth: 680,
+  }).then(canvas => {
+    target.style.visibility = 'hidden';
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+
+    const imgW = canvas.width;
+    const imgH = canvas.height;
+    const pdfW = 210; // A4 mm
+    const pdfH = Math.round((imgH / imgW) * pdfW);
+
+    const pdf = new jsPDF({ orientation: pdfH > pdfW ? 'portrait' : 'landscape', unit: 'mm', format: [pdfW, pdfH] });
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+
+    const idEl = inner.querySelector('.inv-id');
+    const id = idEl ? idEl.textContent : 'crowdbridge-invoice';
+    pdf.save(`${id}.pdf`);
+
+    btn.textContent = 'Download / Print PDF';
+    btn.disabled = false;
+  });
+}
+
+// Init
+loadPrefs();
+document.getElementById('invDate').value = todayStr();
+document.getElementById('dueDate').value = dueDateStr();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
