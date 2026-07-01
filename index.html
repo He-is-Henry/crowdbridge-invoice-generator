@@ -629,7 +629,7 @@
   <div class="invoice-sheet" id="invoiceSheet"></div>
   <div id="preview-btn-row">
     <button class="btn btn-outline" onclick="closePreview()">← Edit</button>
-    <button class="btn btn-gold" onclick="printInvoice()">Download / Print PDF</button>
+    <button class="btn btn-gold" onclick="printInvoice()">Download invoice image</button>
   </div>
 </div>
 
@@ -849,7 +849,7 @@ function closePreview() {
 function printInvoice() {
   savePrefs();
   const btn = event.target;
-  btn.textContent = 'Generating PDF...';
+  btn.textContent = 'Generating image...';
   btn.disabled = true;
 
   const target = document.getElementById('pdfTarget');
@@ -866,23 +866,23 @@ function printInvoice() {
     windowWidth: 680,
   }).then(canvas => {
     target.style.visibility = 'hidden';
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-
-    const imgW = canvas.width;
-    const imgH = canvas.height;
-    const pdfW = 210; // A4 mm
-    const pdfH = Math.round((imgH / imgW) * pdfW);
-
-    const pdf = new jsPDF({ orientation: pdfH > pdfW ? 'portrait' : 'landscape', unit: 'mm', format: [pdfW, pdfH] });
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
 
     const idEl = inner.querySelector('.inv-id');
     const id = idEl ? idEl.textContent : 'crowdbridge-invoice';
-    pdf.save(`${id}.pdf`);
 
-    btn.textContent = 'Download / Print PDF';
-    btn.disabled = false;
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${id}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+      btn.textContent = 'Download invoice image';
+      btn.disabled = false;
+    }, 'image/jpeg', 0.85);
   });
 }
 
@@ -892,6 +892,5 @@ document.getElementById('invDate').value = todayStr();
 document.getElementById('dueDate').value = dueDateStr();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
